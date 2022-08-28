@@ -32,6 +32,7 @@ public class TestGitServiceImpl {
 
     @Test
     public void getRepoInfoGitHubUrlNull() {
+        //Test if gitHubUrl is null
         this.gitService = new GitServiceImpl("", redisRepository);
         when(redisRepository.hasKey(any())).thenReturn(false);
         ResponseEntity<String> responseEntity = gitService.getRepoInfo(any(), any());
@@ -40,6 +41,7 @@ public class TestGitServiceImpl {
 
     @Test
     public void getRepoInfoNotFoundOwner() {
+        //Test if owenr is not found
         when(redisRepository.hasKey(any())).thenReturn(false);
         ResponseEntity<String> responseEntity = gitService.getRepoInfo("lingyan2000", "test1");
         MatcherAssert.assertThat(responseEntity.getStatusCode(), Matchers.is(HttpStatus.NOT_FOUND));
@@ -47,12 +49,14 @@ public class TestGitServiceImpl {
 
     @Test
     public void getRepoInfoNotFoundRepo() {
+        //Test if repo not found
         ResponseEntity<String> responseEntity = gitService.getRepoInfo("lingyan1985", "test1");
         MatcherAssert.assertThat(responseEntity.getStatusCode(), Matchers.is(HttpStatus.NOT_FOUND));
     }
 
     @Test
     public void getRepoInfoHasRedisKey() {
+        //Test if redis exist, it will retrieve from Redis
         JSONObject jsonObject = composeJSONObject();
         when(redisRepository.hasKey(any())).thenReturn(true);
         when(redisRepository.getValue(any())).thenReturn(jsonObject);
@@ -63,6 +67,7 @@ public class TestGitServiceImpl {
 
     @Test
     public void getRepoInfoWithoutRedisKey() {
+        //Test if redis key not exist, get the data from git API
         when(redisRepository.hasKey(any())).thenReturn(false);
         ResponseEntity<String> responseEntity = gitService.getRepoInfo("lingyan1985", "test");
         verify(redisRepository, times(1)).setValue(any(), any());

@@ -21,6 +21,7 @@ public class RedisRepositoryImpl implements RedisRepository{
 
     @Override
     public void setValue(String configKey, String configValue){
+        //Set value to Redis
         Jedis jedis = null;
         try {
             jedis = jedisPool.getResource();
@@ -35,6 +36,7 @@ public class RedisRepositoryImpl implements RedisRepository{
 
     @Override
     public JSONObject getValue(String configKey){
+        //Get value from Redis
         Jedis jedis = null;
         try {
             jedis = jedisPool.getResource();
@@ -54,6 +56,7 @@ public class RedisRepositoryImpl implements RedisRepository{
     }
 
     public boolean hasKey(String configKey) {
+        //Check if key exist in Redis
         Jedis jedis = null;
         try {
             jedis = jedisPool.getResource();

@@ -28,7 +28,6 @@ import static java.util.Objects.nonNull;
 @Service
 public class GitServiceImpl implements GitService {
     private final Supplier<RestTemplate> restTemplateSupplier = RestTemplate::new;
-
     private final String gitHubUrl;
     private final RedisRepository redisRepository;
 
@@ -40,17 +39,20 @@ public class GitServiceImpl implements GitService {
     @Override
     public ResponseEntity getRepoInfo(String owner, String repoName) {
         try {
-            //log.info(gitHubUrl);
+            //Get the Git Hub URL to retrieve repo information
             String endpointUrl = gitHubUrl + SEPARATOR + REPOS + SEPARATOR + owner + SEPARATOR + repoName;
             log.info("endpointUrl: " + endpointUrl);
-            //If found in Redis, then retrieve from Redis
             String configKey = owner + "|" + repoName;
             if(redisRepository.hasKey(configKey)) {
+                //If found in Redis, then retrieve from Redis
                 return new ResponseEntity<>(new APIResponse("success", redisRepository.getValue(owner+"|"+repoName)), HttpStatus.OK);
             } else {
+                //If cannot find the key, then call git GET API
                 ResponseEntity<String> responseEntity = sendRestCall(endpointUrl, HttpMethod.GET, null, String.class);
                 if (nonNull(responseEntity) && SUCCESS_STATUS.equals(responseEntity.getStatusCode().value())) {
                     if (nonNull(responseEntity.getBody())) {
+                        //If success status and body is not empty, then retrieve the required information.
+                        //Use the alibaba.fastjson.JSONObject, no need check the null
                         JSONObject json = JSON.parseObject(responseEntity.getBody());
                         JSONObject gitRepoJson = new JSONObject();
                         gitRepoJson.put("fullName", json.getString("full_name"));
@@ -58,6 +60,7 @@ public class GitServiceImpl implements GitService {
                         gitRepoJson.put("description", json.getString("description"));
                         gitRepoJson.put("stars", json.getInteger("stargazers_count"));
                         gitRepoJson.put("createdAt", json.getString("created_at"));
+                        //Set the value in Redis
                         redisRepository.setValue(owner + "|" + repoName, gitRepoJson.toJSONString());
                         return new ResponseEntity<>(new APIResponse("success", gitRepoJson), HttpStatus.OK);
                     }
@@ -65,6 +68,7 @@ public class GitServiceImpl implements GitService {
                 }
             }
         } catch (Exception e) {
+            //If get exception, then set to INTERNAL_SERVER_ERROR
             log.error("Exception during getRepoInfo: {}", e.getMessage());
             return new ResponseEntity<>(new APIResponse("error", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
