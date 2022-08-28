@@ -18,7 +18,7 @@ public class RedisConfig {
     /**
      * key
      */
-    private static final String KEY = "key12345678";
+    private static final String KEY = "keyForDBSTask2022";
 
     @Bean
     public JedisPool getJedisPool(@Value("${redis.host}") String host,
@@ -34,7 +34,7 @@ public class RedisConfig {
             int connectionTimeout = !StringUtils.isEmpty(conTimeout) ? Integer.parseInt(conTimeout) : DEFAULT_CONNECTION_TIMEOUT;
             int port = Integer.parseInt(portString);
             log.info("host: {}, port: {}, encryptedPassword: {}", host, port, password);
-            String decryptedPass = DecryptUtils.decrypt(KEY, password);
+            String decryptedPass = DecryptUtils.decrypt(password, KEY);
             JedisPool jedisPool = new JedisPool(config, host, port, connectionTimeout, decryptedPass);
             return jedisPool;
         }catch (Exception e){
